@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { UIChart } from "primeng/primeng";
-import { Observable } from "rxjs/Observable";
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/interval';
 
 const DEFAULT_COLORS = ['#3366CC', '#DC3912', '#FF9900', '#109618', '#990099',
   '#3B3EAC', '#0099C6', '#DD4477', '#66AA00', '#B82E2E',
@@ -116,16 +117,6 @@ export class DashboardComponent implements AfterViewInit {
 
 
   ngAfterViewInit() {
-    Observable.interval(3000).timeInterval().subscribe(() => {
-
-      var hoursByTeam = this.hoursByTeamChartDataMixed.datasets;
-      var randomised = hoursByTeam.map((dataset) => {
-
-        dataset.data = dataset.data.map((hours) => hours * (Math.random() * 2));
-
-      });
-      this.mixedChart.refresh();
-    });
 
   }
 

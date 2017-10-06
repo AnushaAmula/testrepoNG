@@ -14,7 +14,7 @@ const MAX_EXAMPLE_RECORDS = 1000;
 })
 export class AlltimesComponent implements OnInit {
 
-  @ViewChild("dt") dt : DataTable;
+  @ViewChild("dt") dt: DataTable;
 
   allTimesheetData = [];
 
@@ -28,7 +28,7 @@ export class AlltimesComponent implements OnInit {
 
   contextMenu: MenuItem[];
 
-  recordCount : number;
+  recordCount: number;
 
   constructor(private apollo: Apollo) { }
 
@@ -59,6 +59,32 @@ export class AlltimesComponent implements OnInit {
 
   }
 
-  onEditComplete(editInfo) { }
+  onEditComplete(event: any) {
+
+    const timesheet: any = event.data;
+    const id = timesheet['id'];
+    const newUser = timesheet['user'];
+
+    const updateTimesheet = gql`
+    mutation updateTimesheet($id: ID!, $user: String!) {
+        updateTimesheet(id: $id, user: $user) {
+          id
+        }
+      }
+    `;
+
+    this.apollo.mutate({
+      mutation: updateTimesheet,
+      variables: {
+        id: id,
+        user: newUser
+      }
+    }).subscribe(({ data }) => {
+      console.log('got data', data);
+    }, (error) => {
+      console.log('there was an error sending the query', error);
+    });
+
+  }
 
 }

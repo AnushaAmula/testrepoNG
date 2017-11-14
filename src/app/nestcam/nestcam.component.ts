@@ -22,14 +22,9 @@ export class NestcamComponent implements OnInit {
 
     });
 
-    console.log("inside nestcam.ts" +_deviceService.devices$.isEmpty);
-
   }
 
   ngOnInit() {
-
-    console.log("inside nestcam.ts");
-    
 
     const AllNestCams = gql`
     query allNestCams {

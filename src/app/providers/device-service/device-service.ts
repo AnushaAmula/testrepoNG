@@ -142,11 +142,12 @@ export class DeviceService {
           if (this._CameraHasNewMotionEvent(cachedDevice, newDevice)) {
 
             newDevice.hasNewEvent = true;
-            this._LogMotionEvent(newDevice);
+
             // Commenting out until I figure out the cors issue.
             // this._notify.SendMotionNotification(newDevice);
 
           }
+
           break;
         }
 
@@ -172,37 +173,6 @@ export class DeviceService {
     return hasNewMotionEvent;
 
   }
-  private _LogMotionEvent(newDevice: DeviceModel): void
-  {
-    this._addNewMotionEvent(newDevice);
-  }
-  private _addNewMotionEvent(newDevice: DeviceModel)
-  {
-      var variables = {
-        cameraId : newDevice.id,
-        cameraName: newDevice.name,
-        eventDate: new Date(),
-        image: newDevice.snapshotURL
-       };
- 
-       var client = require('graphql-client')({ url: 'https://api.graph.cool/simple/v1/cj7wkkx1h0hm70145q6pn99i9' });
-       client.query(`
-       mutation createMotionEvent ($cameraId: String!, $cameraName: String!, $eventDate: DateTime!, $image: String!) {
-        createMotionEvent(cameraId: $cameraId, cameraName: $cameraName, eventDate: $eventDate, image: $image ) {
-               id
-           }
-       }`, variables, function (req, res) {
-           if (res.status === 401) {
-               throw new Error('Not authorized');
-           }
-       })
-       .then(function (body) {
-           console.log(body);
-       })
-       .catch(function (err) {
-           console.log(err.message);
- });
- }
-  
+
 }
 

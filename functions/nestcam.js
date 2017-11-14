@@ -39,12 +39,8 @@ function getWelcomeResponse(callback) {
     // If we wanted to initialize the session to have some attributes we could add those here.
     const sessionAttributes = {};
     const cardTitle = 'Welcome';
-    const speechOutput = 'Welcome to agile times. ' +
-        'Please add new timesheet by saying, add timesheet to Project name and category.';
-    // If the user either does not reply to the welcome message or says something that is not
-    // understood, they will be prompted again with this text.
-    const repromptText = 'Please add new timesheet by saying, ' +
-        'add time to Project name.';
+    const speechOutput = 'Welcome to NestCam test.';
+    const repromptText = '';
     const shouldEndSession = false;
 
     callback(sessionAttributes,
@@ -53,43 +49,45 @@ function getWelcomeResponse(callback) {
 
 function handleSessionEndRequest(callback) {
     const cardTitle = 'Session Ended';
-    const speechOutput = 'Thank you for using agile times. Have a nice day!';
+    const speechOutput = 'Thank you for using NestCam. Have a nice day!';
     // Setting this to true ends the session and exits the skill.
     const shouldEndSession = true;
 
     callback({}, buildSpeechletResponse(cardTitle, speechOutput, null, shouldEndSession));
 }
 
-function createAttributes(Project, Category) {
-    return {
-        Project,
-        Category
-    };
-}
-
 /**
- * Adds new timesheet to a project.
+ * Turns NestCam streaming On.
  */
-function addTimesheet(intent, session, callback) {
+function nestcamOn(intent, session, callback) {
     const cardTitle = intent.name;
-    const projectSlot = intent.slots.Project;
-    const categorySlot = intent.slots.Category;
     let repromptText = null;
     let sessionAttributes = {};
     const shouldEndSession = true;
-    let speechOutput = '';
+    let speechOutput = "Initializing video feed.";
 
-    if (projectSlot && typeof (projectSlot.value) !== 'undefined') {
-        const project = projectSlot.value;
-        const category = categorySlot.value;
-        sessionAttributes = createAttributes(project, category);
-        speechOutput = categorySlot && typeof (categorySlot.value) !== 'undefined' ? `Got it. Adding new timesheet to ${project} project, ${category} category.` : `Got it. Adding new timesheet to ${project} project.`;
-
-        createNewTimeSheet(project, category);
-
-    } else {
-        speechOutput = "I couldn't find that project name. Please try again.";
-    }
+    var client = require('graphql-client')({ url: 'https://api.graph.cool/simple/v1/cj7qirvgf02cl0116yr8ks74h' });
+    
+        client.query(`
+            mutation {
+                updateNestCam(
+                    id: "cj9k4unu9pwqh0104z9gkov2l"
+                    isStreaming: true
+                )
+                {
+                    id
+                }
+            }`, function (req, res) {
+                if (res.status === 401) {
+                    throw new Error('Not authorized');
+                }
+            })
+            .then(function (body) {
+                console.log(body);
+            })
+            .catch(function (err) {
+                console.log(err.message);
+            });
 
     // Setting repromptText to null signifies that we do not want to reprompt the user.
     // If the user does not respond or says something that is not understood, the session
@@ -98,36 +96,44 @@ function addTimesheet(intent, session, callback) {
         buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
 }
 
-function createNewTimeSheet(projectName, categoryName) {
-
-    var variables = {
-        user: 'testUser',
-        project: projectName,
-        category: categoryName ? categoryName : '',
-        startTime: 12,
-        endTime: 18,
-        date: new Date()
-    };
+/**
+ * Turns NestCam streaming Off.
+ */
+function nestcamOff(intent, session, callback) {
+    const cardTitle = intent.name;
+    let repromptText = null;
+    let sessionAttributes = {};
+    const shouldEndSession = true;
+    let speechOutput = "Killing video stream.";
 
     var client = require('graphql-client')({ url: 'https://api.graph.cool/simple/v1/cj7qirvgf02cl0116yr8ks74h' });
+    
+        client.query(`
+            mutation {
+                updateNestCam(
+                    id: "cj9k4unu9pwqh0104z9gkov2l"
+                    isStreaming: false
+                )
+                {
+                    id
+                }
+            }`, function (req, res) {
+                if (res.status === 401) {
+                    throw new Error('Not authorized');
+                }
+            })
+            .then(function (body) {
+                console.log(body);
+            })
+            .catch(function (err) {
+                console.log(err.message);
+            });
 
-    client.query(`
-        mutation createTimesheet ($user: String!, $project: String!, $category: String!, $startTime: Int!, $endTime: Int!, $date: DateTime!) {
-            createTimesheet(user: $user, project: $project, category: $category, startTime: $startTime, endTime: $endTime, date: $date ) {
-                id
-            }
-        }`, variables, function (req, res) {
-            if (res.status === 401) {
-                throw new Error('Not authorized');
-            }
-        })
-        .then(function (body) {
-            console.log(body);
-        })
-        .catch(function (err) {
-            console.log(err.message);
-        });
-
+    // Setting repromptText to null signifies that we do not want to reprompt the user.
+    // If the user does not respond or says something that is not understood, the session
+    // will end.
+    callback(sessionAttributes,
+        buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
 }
 
 // --------------- Events -----------------------
@@ -160,8 +166,10 @@ function onIntent(intentRequest, session, callback) {
     const intentName = intentRequest.intent.name;
 
     // Dispatch to your skill's intent handlers
-    if (intentName === 'AddTimesheetIntent') {
-        addTimesheet(intent, session, callback);
+    if (intentName === 'TurnOnNestcamIntent') {
+        nestcamOn(intent, session, callback);
+    } else if (intentName === 'TurnOffNestcamIntent') {
+        nestcamOff(intent, session, callback);
     } else if (intentName === 'AMAZON.HelpIntent') {
         getWelcomeResponse(callback);
     } else if (intentName === 'AMAZON.StopIntent' || intentName === 'AMAZON.CancelIntent') {

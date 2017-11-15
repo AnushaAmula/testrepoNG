@@ -132,7 +132,6 @@ export class DeviceService {
 
   // Sets hasNewEvent property for new devices.
   private _ParseDevicesForMotionEvents(cachedDevices: Array<DeviceModel>, newDevices: Array<DeviceModel>): Array<DeviceModel> {
-
     for (var cachedDevice of cachedDevices) {
 
       for (var newDevice of newDevices) {
